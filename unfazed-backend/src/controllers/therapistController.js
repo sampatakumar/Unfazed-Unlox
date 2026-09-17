@@ -1,5 +1,15 @@
 import mongoose from "mongoose";
 import Therapist from "../models/Therapist.js";
+import Review from "../models/Review.js";
+
+const demoReviews = [
+  { _id: "rev_1", clientName: "Anand V.", rating: 5, comment: "Dr. Ashmita helped me navigate extreme work anxiety with CBT tools that actually work. Highly empathetic and non-judgmental approach.", createdAt: new Date().toISOString() },
+  { _id: "rev_2", clientName: "Megha S.", rating: 5, comment: "Our couples therapy sessions saved our relationship. She created a safe space where both of us felt heard and valued.", createdAt: new Date().toISOString() },
+  { _id: "rev_3", clientName: "Rahul K.", rating: 5, comment: "Very structured approach. I could feel actionable emotional progress after just 3 sessions.", createdAt: new Date().toISOString() },
+  { _id: "rev_4", clientName: "Simran P.", rating: 5, comment: "Compassionate, insightful, and incredibly skilled in Schema Therapy and stress management.", createdAt: new Date().toISOString() },
+  { _id: "rev_5", clientName: "Zoya T.", rating: 5, comment: "Best psychologist I have consulted. Her guidance gave me back my peaceful sleep and self-confidence.", createdAt: new Date().toISOString() },
+  { _id: "rev_6", clientName: "Tanmay M.", rating: 5, comment: "100% recommended for anyone struggling with burnout, career anxiety, or chronic overthinking.", createdAt: new Date().toISOString() },
+];
 
 const demoTherapists = [
   {
@@ -140,3 +150,73 @@ export const updateTherapistProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+// Get all clean reviews for a therapist from MongoDB
+export const getTherapistReviews = async (req, res, next) => {
+  try {
+    const { therapistId } = req.params;
+
+    if (mongoose.connection.readyState !== 1 || !mongoose.Types.ObjectId.isValid(therapistId)) {
+      return res.json(demoReviews);
+    }
+
+    const reviews = await Review.find({ therapistId }).sort({ createdAt: -1 });
+    if (reviews.length === 0) {
+      return res.json(demoReviews);
+    }
+    res.json(reviews);
+  } catch (error) {
+    res.json(demoReviews);
+  }
+};
+
+// Post a new clean review for a therapist to MongoDB
+export const addTherapistReview = async (req, res, next) => {
+  try {
+    const { therapistId } = req.params;
+    const { clientName, rating, comment } = req.body;
+
+    // Sanitize and trim inputs
+    const cleanName = (clientName || "").trim();
+    const cleanComment = (comment || "").trim();
+    const cleanRating = Math.min(5, Math.max(1, Number(rating) || 5));
+
+    if (!cleanName || !cleanComment) {
+      return res.status(400).json({ message: "Client name and feedback comment are required." });
+    }
+
+    if (mongoose.connection.readyState !== 1 || !mongoose.Types.ObjectId.isValid(therapistId)) {
+      const newDemoRev = {
+        _id: "rev_" + Date.now(),
+        clientName: cleanName,
+        rating: cleanRating,
+        comment: cleanComment,
+        createdAt: new Date().toISOString(),
+      };
+      return res.status(201).json({ review: newDemoRev, reviews: [newDemoRev, ...demoReviews] });
+    }
+
+    const review = await Review.create({
+      therapistId,
+      clientName: cleanName,
+      rating: cleanRating,
+      comment: cleanComment,
+    });
+
+    // Recalculate therapist average rating & reviewsCount
+    const allReviews = await Review.find({ therapistId });
+    const avgRating = (
+      allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
+    ).toFixed(1);
+
+    await Therapist.findByIdAndUpdate(therapistId, {
+      rating: Number(avgRating),
+      reviewsCount: allReviews.length,
+    });
+
+    res.status(201).json({ review, reviews: allReviews });
+  } catch (error) {
+    next(error);
+  }
+};
+

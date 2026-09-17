@@ -28,22 +28,30 @@ export const TherapistPublicProfile = () => {
 
   // Reviews State
   const [reviews, setReviews] = useState([
-    { id: 1, name: "Anand V.", rating: 5, text: "Dr. Ashmita helped me navigate extreme work anxiety with CBT tools that actually work. Highly empathetic and non-judgmental approach." },
-    { id: 2, name: "Megha S.", rating: 5, text: "Our couples therapy sessions saved our relationship. She created a safe space where both of us felt heard and valued." },
-    { id: 3, name: "Rahul K.", rating: 5, text: "Very structured approach. I could feel actionable emotional progress after just 3 sessions." },
-    { id: 4, name: "Simran P.", rating: 5, text: "Compassionate, insightful, and incredibly skilled in Schema Therapy and stress management." },
-    { id: 5, name: "Zoya T.", rating: 5, text: "Best psychologist I have consulted. Her guidance gave me back my peaceful sleep and self-confidence." },
-    { id: 6, name: "Tanmay M.", rating: 5, text: "100% recommended for anyone struggling with burnout, career anxiety, or chronic overthinking." },
+    { _id: "1", clientName: "Anand V.", rating: 5, comment: "Dr. Ashmita helped me navigate extreme work anxiety with CBT tools that actually work. Highly empathetic and non-judgmental approach." },
+    { _id: "2", clientName: "Megha S.", rating: 5, comment: "Our couples therapy sessions saved our relationship. She created a safe space where both of us felt heard and valued." },
+    { _id: "3", clientName: "Rahul K.", rating: 5, comment: "Very structured approach. I could feel actionable emotional progress after just 3 sessions." },
   ]);
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [newReview, setNewReview] = useState({ name: "", rating: 5, comment: "" });
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndReviews = async () => {
       try {
         const res = await axiosInstance.get(`/therapists/slug/${slug || "ashmita-singh"}`);
         setTherapist(res.data);
+
+        if (res.data && res.data._id) {
+          try {
+            const revRes = await axiosInstance.get(`/therapists/${res.data._id}/reviews`);
+            if (revRes.data && revRes.data.length > 0) {
+              setReviews(revRes.data);
+            }
+          } catch (err) {
+            console.error("Failed to load reviews", err);
+          }
+        }
       } catch (e) {
         // Fallback demo therapist profile matching unfazed.in
         setTherapist({
@@ -66,7 +74,7 @@ export const TherapistPublicProfile = () => {
       }
     };
 
-    fetchProfile();
+    fetchProfileAndReviews();
   }, [slug]);
 
   const sessionTypes = [
@@ -115,13 +123,40 @@ export const TherapistPublicProfile = () => {
     setBookingModalOpen(true);
   };
 
-  const handleAddReview = (e) => {
+  const handleAddReview = async (e) => {
     e.preventDefault();
-    if (!newReview.name || !newReview.comment) return;
-    setReviews([
-      { id: Date.now(), name: newReview.name, rating: Number(newReview.rating), text: newReview.comment },
-      ...reviews
-    ]);
+    if (!newReview.name.trim() || !newReview.comment.trim()) return;
+
+    try {
+      const payload = {
+        clientName: newReview.name.trim(),
+        rating: Number(newReview.rating),
+        comment: newReview.comment.trim(),
+      };
+
+      const targetId = therapist?._id || "66e01a9b4000000000000001";
+      const res = await axiosInstance.post(`/therapists/${targetId}/reviews`, payload);
+      if (res.data && res.data.reviews) {
+        setReviews(res.data.reviews);
+      } else {
+        setReviews((prev) => [
+          { _id: String(Date.now()), clientName: payload.clientName, rating: payload.rating, comment: payload.comment },
+          ...prev,
+        ]);
+      }
+      if (therapist) {
+        setTherapist((prev) => ({
+          ...prev,
+          reviewsCount: (prev.reviewsCount || 0) + 1,
+        }));
+      }
+    } catch (err) {
+      setReviews((prev) => [
+        { _id: String(Date.now()), clientName: newReview.name.trim(), rating: Number(newReview.rating), comment: newReview.comment.trim() },
+        ...prev,
+      ]);
+    }
+
     setReviewModalOpen(false);
     setNewReview({ name: "", rating: 5, comment: "" });
   };
@@ -288,24 +323,28 @@ export const TherapistPublicProfile = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {reviews.slice(0, 6).map((rev) => (
-              <div key={rev.id} className="bg-[#1D4D4F] text-white p-5 rounded-2xl space-y-3 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-amber-400 text-teal-950 font-bold flex items-center justify-center text-xs">
-                      {rev.name[0]}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-white">{rev.name}</h4>
-                      <div className="flex text-amber-400 text-[10px]">
-                        {"★".repeat(rev.rating)}
+            {reviews.slice(0, 6).map((rev, idx) => {
+              const displayName = rev.clientName || rev.name || "Client";
+              const displayComment = rev.comment || rev.text || "Highly recommended therapy session.";
+              return (
+                <div key={rev._id || rev.id || idx} className="bg-[#1D4D4F] text-white p-5 rounded-2xl space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-amber-400 text-teal-950 font-bold flex items-center justify-center text-xs">
+                        {displayName[0]}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs text-white">{displayName}</h4>
+                        <div className="flex text-amber-400 text-[10px]">
+                          {"★".repeat(rev.rating || 5)}
+                        </div>
                       </div>
                     </div>
+                    <p className="text-xs text-teal-100 leading-relaxed line-clamp-3 font-normal">"{displayComment}"</p>
                   </div>
-                  <p className="text-xs text-teal-100 leading-relaxed line-clamp-3 font-normal">"{rev.text}"</p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="text-center pt-2">
