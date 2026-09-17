@@ -11,7 +11,8 @@ export const ChatWindow = ({ roomId = "room_demo", currentUserName = "Dr. Ashmit
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const s = io("http://localhost:5000");
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || "https://unfazed-unlox.onrender.com";
+    const s = io(socketUrl);
     socketRef.current = s;
 
     s.emit("join_room", { roomId, userName: currentUserName });

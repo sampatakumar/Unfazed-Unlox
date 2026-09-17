@@ -3,7 +3,9 @@
 **Unfazed** is a comprehensive therapy management platform designed to connect clients with licensed therapists while empowering mental health professionals with suite-level tools for practice management, client tracking, scheduling, session notes, analytics, and billing.
 
 ### 🌐 Live Deployment
-- **Frontend App**: [https://unfazed-unlox.vercel.app/](https://unfazed-unlox.vercel.app/)
+- **Frontend App (Vercel)**: [https://unfazed-unlox.vercel.app/](https://unfazed-unlox.vercel.app/)
+- **Backend API (Render)**: [https://unfazed-unlox.onrender.com/api](https://unfazed-unlox.onrender.com/api)
+- **API Health Endpoint**: [https://unfazed-unlox.onrender.com/api/health](https://unfazed-unlox.onrender.com/api/health)
 
 ---
 
