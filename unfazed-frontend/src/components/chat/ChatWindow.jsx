@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Send, MessageSquare, Shield, Circle } from "lucide-react";
 import { io } from "socket.io-client";
 
@@ -8,11 +8,11 @@ export const ChatWindow = ({ roomId = "room_demo", currentUserName = "Dr. Ashmit
     { id: "2", sender: "Dr. Ashmita", message: "Hi Rohan! Yes, remember to practice the 4-7-8 rhythm twice daily before meetings.", timestamp: "10:16 AM" },
   ]);
   const [inputText, setInputText] = useState("");
-  const [socket, setSocket] = useState(null);
+  const socketRef = useRef(null);
 
   useEffect(() => {
     const s = io("http://localhost:5000");
-    setSocket(s);
+    socketRef.current = s;
 
     s.emit("join_room", { roomId, userName: currentUserName });
 
@@ -20,7 +20,10 @@ export const ChatWindow = ({ roomId = "room_demo", currentUserName = "Dr. Ashmit
       setMessages((prev) => [...prev, msg]);
     });
 
-    return () => s.disconnect();
+    return () => {
+      s.disconnect();
+      socketRef.current = null;
+    };
   }, [roomId, currentUserName]);
 
   const handleSend = (e) => {
@@ -34,8 +37,8 @@ export const ChatWindow = ({ roomId = "room_demo", currentUserName = "Dr. Ashmit
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
-    if (socket) {
-      socket.emit("send_message", newMsg);
+    if (socketRef.current) {
+      socketRef.current.emit("send_message", newMsg);
     } else {
       setMessages((prev) => [...prev, { ...newMsg, id: Date.now() }]);
     }
@@ -68,10 +71,10 @@ export const ChatWindow = ({ roomId = "room_demo", currentUserName = "Dr. Ashmit
 
       {/* Messages Scroll Area */}
       <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50/40">
-        {messages.map((m) => {
+        {messages.map((m, idx) => {
           const isMe = m.sender === currentUserName;
           return (
-            <div key={m.id || Math.random()} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+            <div key={m.id || idx} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
               <span className="text-[10px] text-gray-400 mb-1 px-1">{m.sender} • {m.timestamp}</span>
               <div
                 className={`max-w-xs sm:max-w-md px-4 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs ${

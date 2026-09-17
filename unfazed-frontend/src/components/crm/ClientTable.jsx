@@ -91,7 +91,7 @@ export const ClientTable = ({ clients, onSelectClient, onAddClientTrigger }) => 
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    <span>Signed: {new Date(client.consent?.timestamp || Date.now()).toLocaleDateString("en-IN")}</span>
+                    <span>Signed: {client.consent?.timestamp ? new Date(client.consent.timestamp).toLocaleDateString("en-IN") : "Verified"}</span>
                   </div>
                 </td>
                 <td className="py-4 px-6 text-right">

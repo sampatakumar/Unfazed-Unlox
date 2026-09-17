@@ -1,19 +1,54 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
-import {
-  ShieldCheck,
-  Award,
-  Star,
-  CheckCircle2,
-  ChevronRight,
-  ArrowRight,
-  UserCheck,
-  Heart,
-  MessageSquare,
-  HelpCircle,
-  Sparkles,
-} from "lucide-react";
+import { ShieldCheck, CheckCircle2 } from "lucide-react";
+
+const FALLBACK_THERAPISTS = [
+  {
+    _id: "66e01a9b4000000000000001",
+    name: "Ashmita",
+    slug: "ashmita",
+    title: "Clinical Psychologist (RCI Registered)",
+    experienceYears: 4,
+    sessionPriceIndividual: 1350,
+    imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400",
+    rating: 5.0,
+    reviewsCount: 48,
+  },
+  {
+    _id: "66e01a9b4000000000000002",
+    name: "Dr. Neha Sharma",
+    slug: "neha-sharma",
+    title: "Senior Counseling Psychologist",
+    experienceYears: 6,
+    sessionPriceIndividual: 1350,
+    imageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400",
+    rating: 4.9,
+    reviewsCount: 36,
+  },
+  {
+    _id: "66e01a9b4000000000000003",
+    name: "Dr. Ritu Verma",
+    slug: "ritu-verma",
+    title: "Child & Adolescent Specialist",
+    experienceYears: 7,
+    sessionPriceIndividual: 1350,
+    imageUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&q=80&w=400",
+    rating: 4.9,
+    reviewsCount: 42,
+  },
+  {
+    _id: "66e01a9b4000000000000004",
+    name: "Dr. Amit Patel",
+    slug: "amit-patel",
+    title: "Couples & Marriage Counselor",
+    experienceYears: 10,
+    sessionPriceIndividual: 2500,
+    imageUrl: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400",
+    rating: 4.8,
+    reviewsCount: 52,
+  },
+];
 
 export const HomePage = () => {
   const [therapists, setTherapists] = useState([]);
@@ -26,61 +61,14 @@ export const HomePage = () => {
         if (res.data && res.data.length > 0) {
           setTherapists(res.data);
         } else {
-          setTherapists(fallbackTherapists);
+          setTherapists(FALLBACK_THERAPISTS);
         }
       } catch (e) {
-        setTherapists(fallbackTherapists);
+        setTherapists(FALLBACK_THERAPISTS);
       }
     };
     fetchTherapists();
   }, []);
-
-  const fallbackTherapists = [
-    {
-      _id: "66e01a9b4000000000000001",
-      name: "Ashmita",
-      slug: "ashmita",
-      title: "Clinical Psychologist (RCI Registered)",
-      experienceYears: 4,
-      sessionPriceIndividual: 1350,
-      imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400",
-      rating: 5.0,
-      reviewsCount: 48,
-    },
-    {
-      _id: "66e01a9b4000000000000002",
-      name: "Dr. Neha Sharma",
-      slug: "neha-sharma",
-      title: "Senior Counseling Psychologist",
-      experienceYears: 6,
-      sessionPriceIndividual: 1350,
-      imageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400",
-      rating: 4.9,
-      reviewsCount: 36,
-    },
-    {
-      _id: "66e01a9b4000000000000003",
-      name: "Dr. Ritu Verma",
-      slug: "ritu-verma",
-      title: "Child & Adolescent Specialist",
-      experienceYears: 7,
-      sessionPriceIndividual: 1350,
-      imageUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&q=80&w=400",
-      rating: 4.9,
-      reviewsCount: 42,
-    },
-    {
-      _id: "66e01a9b4000000000000004",
-      name: "Dr. Amit Patel",
-      slug: "amit-patel",
-      title: "Couples & Marriage Counselor",
-      experienceYears: 10,
-      sessionPriceIndividual: 2500,
-      imageUrl: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400",
-      rating: 4.8,
-      reviewsCount: 51,
-    },
-  ];
 
   const reviews = [
     {
@@ -330,7 +318,7 @@ export const HomePage = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {(therapists.length > 0 ? therapists : fallbackTherapists).slice(0, 4).map((t) => (
+          {(therapists.length > 0 ? therapists : FALLBACK_THERAPISTS).slice(0, 4).map((t) => (
             <div key={t._id || t.slug} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-md space-y-3 text-center">
               <img
                 src={t.imageUrl || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400"}

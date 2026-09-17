@@ -19,12 +19,11 @@ export const SlotPicker = ({
   // Multi-slot selection state (Therapist Mode)
   const [multiSlots, setMultiSlots] = useState(new Set(["09:00", "10:00", "14:00", "16:00", "18:00"]));
 
-  // Sync prop changes if parent passes selectedDate
-  useEffect(() => {
-    if (selectedDate && selectedDate !== activeDate) {
-      setActiveDate(selectedDate);
-    }
-  }, [selectedDate]);
+  const [prevSelectedDate, setPrevSelectedDate] = useState(selectedDate);
+  if (selectedDate && selectedDate !== prevSelectedDate) {
+    setPrevSelectedDate(selectedDate);
+    setActiveDate(selectedDate);
+  }
 
   // Generate 14 days list from today
   const dates = Array.from({ length: 14 }, (_, i) => {

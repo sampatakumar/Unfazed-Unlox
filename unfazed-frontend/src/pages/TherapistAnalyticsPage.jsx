@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosInstance";
 import RevenueChart from "../components/analytics/RevenueChart";
 import UpgradeModal from "../components/common/UpgradeModal";
@@ -20,7 +20,7 @@ export const TherapistAnalyticsPage = () => {
       }
     };
     fetchAnalytics();
-  }, []);
+  }, [checkEntitlement]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import SlotPicker from "../components/scheduling/SlotPicker";
 import axiosInstance from "../api/axiosInstance";
-import { Clock, Calendar, CheckCircle2, Save, Sparkles, Plus, Trash2 } from "lucide-react";
+import { Save } from "lucide-react";
 
 export const TherapistSchedulePage = () => {
   const [duration, setDuration] = useState(50);
@@ -36,7 +36,9 @@ export const TherapistSchedulePage = () => {
           if (parsed.bufferTime) setBuffer(parsed.bufferTime);
           if (parsed.weeklySchedule) setWeeklyMatrix(parsed.weeklySchedule);
           if (parsed.overrides) setAllOverrides(parsed.overrides);
-        } catch (err) {}
+        } catch (err) {
+          console.error("Failed to parse cached schedule", err);
+        }
       }
 
       try {

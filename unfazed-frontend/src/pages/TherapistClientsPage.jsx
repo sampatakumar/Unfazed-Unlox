@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosInstance";
 import ClientTable from "../components/crm/ClientTable";
 import UpgradeModal from "../components/common/UpgradeModal";
@@ -23,24 +23,38 @@ export const TherapistClientsPage = () => {
   }, []);
 
   const handleAddClientTrigger = () => {
-    const allowed = checkEntitlement("add_client", clients.length);
-    if (!allowed) return;
-    alert("Add client modal trigger (Simulated)");
+    if (checkEntitlement("unlimited_clients", clients.length)) {
+      alert("Feature unlocked! Launching Add Client Form...");
+    }
+  };
+
+  const getConsentDate = (timestamp) => {
+    if (!timestamp) return "Verified (Accepted)";
+    return new Date(timestamp).toLocaleString();
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <ClientTable
-        clients={clients}
-        onSelectClient={(c) => setSelectedClient(c)}
-        onAddClientTrigger={handleAddClientTrigger}
-      />
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Client Management (CRM)</h1>
+          <p className="text-gray-500 text-sm">Track active clients, intake documentation, and intake consents.</p>
+        </div>
+        <button
+          onClick={handleAddClientTrigger}
+          className="bg-teal-600 hover:bg-teal-700 text-white font-medium px-4 py-2 rounded-xl text-sm shadow-sm transition"
+        >
+          + Add New Client
+        </button>
+      </div>
 
-      {/* Client Detail Profile Modal */}
+      <ClientTable clients={clients} onSelectClient={(client) => setSelectedClient(client)} />
+
+      {/* Client Detail Drawer / Modal */}
       {selectedClient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-5 border border-gray-100 relative max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start border-b border-gray-100 pb-3">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-end z-50">
+          <div className="bg-white w-full max-w-md h-full shadow-2xl p-6 space-y-6 overflow-y-auto">
+            <div className="flex justify-between items-start border-b border-gray-100 pb-4">
               <div>
                 <h3 className="font-bold text-gray-900 text-lg">{selectedClient.name}</h3>
                 <p className="text-xs text-gray-500">{selectedClient.email} | {selectedClient.phone}</p>
@@ -57,7 +71,7 @@ export const TherapistClientsPage = () => {
 
               <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 space-y-1 text-emerald-900">
                 <h4 className="font-bold text-emerald-950 text-sm">Digital Consent Audit Record</h4>
-                <p>Status: Accepted on {new Date(selectedClient.consent?.timestamp || Date.now()).toLocaleString()}</p>
+                <p>Status: Accepted on {getConsentDate(selectedClient.consent?.timestamp)}</p>
                 <p className="font-mono text-[10px]">IP Audit Hash: {selectedClient.consent?.ipAddress || "103.21.124.8"}</p>
               </div>
             </div>

@@ -1,22 +1,21 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
 import SlotPicker from "../components/scheduling/SlotPicker";
 import CheckoutModal from "../components/payments/CheckoutModal";
 import axiosInstance from "../api/axiosInstance";
-import { ShieldCheck, Calendar, User, FileText, CheckSquare, Lock } from "lucide-react";
+import { User, Lock } from "lucide-react";
 
 export const BookingPage = () => {
   const { type, therapistId } = useParams();
-  const navigate = useNavigate();
 
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [clientData, setClientData] = useState({
     name: "",
     email: "",
     phone: "",
-    age: "",
-    gender: "Female",
     presentingConcern: "",
+    age: "",
+    gender: "Male",
   });
 
   const [consentAccepted, setConsentAccepted] = useState(false);
@@ -29,7 +28,7 @@ export const BookingPage = () => {
     setCheckoutOpen(true);
   };
 
-  const handlePaymentSuccess = async (res) => {
+  const handlePaymentSuccess = async (_res) => {
     try {
       await axiosInstance.post("/scheduling/book", {
         therapistId: therapistId || "66e01a9b4000000000000001",
